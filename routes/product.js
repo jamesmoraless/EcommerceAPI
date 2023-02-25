@@ -28,7 +28,7 @@ router.put("/:id", verifyTokenAndAdmin, async (req, res)=>{
             {new:true}
             );
             res.status(200).json(updatedProduct);
-        //this method takes somethnig as a first parameter and updates it by the second (specific mongo function)
+        //this method takes something as a first parameter and updates it by the second (specific mongo function)
     }catch(err){
         res.status(500).json(err)};
 }); 
