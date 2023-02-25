@@ -52,7 +52,7 @@ router.get("/find/:id", verifyTokenAndAdmin, async (req, res)=>{
 router.get("/", verifyTokenAndAdmin, async (req, res)=>{
     const query = req.query.new;
     try {
-        const users = query ? await User.find().sort({ _id: -1 }).limit(1) : await User.find();//if there is a "new" query, return only 1 newest user, otherwise return all 
+        const users = query ? await User.find().sort({ _id: -1 }).limit(1) : await User.find();//if there is a "new" query, return only 5 newest users, otherwise return all 
         res.status(200).json(users); 
     } catch (err) {
         res.status(500).json(err);
@@ -60,11 +60,26 @@ router.get("/", verifyTokenAndAdmin, async (req, res)=>{
 })
 
 //GET USER STATS (Only admin)
-router.get("/", verifyTokenAndAdmin, async (req, res)=>{
-    const query = req.query.new;
+//total #of users per month... will add to this to make it deeper (i.e. revenue, etc)
+router.get("/stats", verifyTokenAndAdmin, async (req, res)=>{
+    const date = new Date();
+    const lastYear = new Date(date.setFullYear(date.getFullYear() - 1))
     try {
-        const users = query ? await User.find().sort({ _id: -1 }).limit(1) : await User.find();
-        res.status(200).json(users); 
+        const data = await User.aggregate([
+            {$match: {createdAt: {$gte: lastYear} } },
+            {$project:{
+                month: {$month: "$createdAt"},
+            },
+        },
+        {
+            $group:{
+                _id:"$month",
+                total:{$sum: 1},
+            },
+        },
+        ]);//
+        
+        res.status(200).json(data); 
     } catch (err) {
         res.status(500).json(err);
     }
